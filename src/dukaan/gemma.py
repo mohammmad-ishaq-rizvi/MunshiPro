@@ -71,9 +71,7 @@ def _json(text):
         i += 1
     if found is None:
         raise ValueError("Gemma did not return valid JSON. Try again or enter the details manually.")
-    return foundgit add -A
-git commit -m "Fix JSON picking inner item"
-git push origin main --force
+    return found
 
 
 def parse_voice_order(transcript, catalog=None):
