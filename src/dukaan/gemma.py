@@ -32,12 +32,23 @@ def _generate(parts, max_tokens=2048):
         "contents": [{"parts": parts}],
         "generationConfig": {"temperature": 0, "maxOutputTokens": max_tokens},
     }
-    resp = requests.post(
-        API_URL.format(model=model),
-        headers={"x-goog-api-key": key, "Content-Type": "application/json"},
-        json=body,
-        timeout=90,
-    )
+    resp = None
+    last_err = None
+    for _ in range(2):  # one automatic retry
+        try:
+            resp = requests.post(
+                API_URL.format(model=model),
+                headers={"x-goog-api-key": key, "Content-Type": "application/json"},
+                json=body,
+                timeout=(15, 180),  # 15 s to connect, 180 s to read
+            )
+            break
+        except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError) as e:
+            last_err = e
+    if resp is None:
+        raise RuntimeError(
+            "Google took too long to answer. Try a smaller or clearer photo, or try again in a minute."
+        ) from last_err
     if resp.status_code != 200:
         try:
             msg = resp.json()["error"]["message"]
@@ -64,7 +75,7 @@ def _json(text):
                 obj, end = dec.raw_decode(text[i:])
                 if isinstance(obj, list) or (isinstance(obj, dict) and obj):
                     found = obj
-                i += end          # jump past this block so inner items are not picked
+                i += end  # jump past this block so inner items are not picked
                 continue
             except ValueError:
                 pass
@@ -96,13 +107,13 @@ Transcript: {transcript}"""
     return out
 
 
-def _prepare_image(data, max_side=1600):
+def _prepare_image(data, max_side=1280):
     """Fix rotation, shrink and compress so the upload and the model are faster."""
     img = Image.open(io.BytesIO(data))
     img = ImageOps.exif_transpose(img).convert("RGB")
     img.thumbnail((max_side, max_side))
     buf = io.BytesIO()
-    img.save(buf, format="JPEG", quality=85, optimize=True)
+    img.save(buf, format="JPEG", quality=80, optimize=True)
     return buf.getvalue(), "image/jpeg"
 
 
@@ -110,12 +121,12 @@ def read_ledger_image(data, mime_type="image/jpeg"):
     try:
         data, mime_type = _prepare_image(data)
     except Exception:
-        pass
+        pass  # not a normal image: send as is
     prompt = """Read this handwritten shop ledger page.
 Reply with ONLY one JSON object, no explanation, no markdown.
 Example of the exact format: {"rows":[{"date":"12/03","customer":"Ramesh","description":"chawal 2kg","debit":120,"credit":0,"confidence":"medium"}]}
 Rules: confidence is one of low, medium, high. Preserve script and spelling. Transcribe visible rows only. Never infer unclear amounts, balances or transaction types. Use "" or null for unreadable fields. Every row needs human review."""
     image = {"inline_data": {"mime_type": mime_type, "data": base64.b64encode(data).decode()}}
-    parsed = _json(_generate([image, {"text": prompt}], max_tokens=4096))
+    parsed = _json(_generate([image, {"text": prompt}], max_tokens=3072))
     rows = parsed if isinstance(parsed, list) else parsed.get("rows", [])
     return [{**r, "reviewed": False} for r in rows]
