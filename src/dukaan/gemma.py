@@ -45,21 +45,38 @@ def _generate(parts, max_tokens=2048):
             msg = resp.text[:300]
         raise RuntimeError(f"Gemini API error {resp.status_code}: {msg}")
     try:
-        return "".join(p.get("text", "") for p in resp.json()["candidates"][0]["content"]["parts"])
+        parts_out = resp.json()["candidates"][0]["content"]["parts"]
+        # skip the model's reasoning parts, keep only the answer
+        return "".join(p.get("text", "") for p in parts_out if not p.get("thought"))
     except Exception:
         raise RuntimeError("Gemma returned no text. Try again or enter the details manually.")
 
 
 def _json(text):
-    match = re.search(r"\{.*\}|\[.*\]", text, re.S)
-    if not match:
-        raise ValueError("Gemma did not return structured JSON. Please enter the details manually.")
-    return json.loads(match.group())
+    """Find the LAST valid JSON object/array in the reply (ignores echoed templates and reasoning)."""
+    text = re.sub(r"```(?:json)?", "", text or "")
+    dec = json.JSONDecoder()
+    found = None
+    for m in re.finditer(r"[\{\[]", text):
+        try:
+            obj, _ = dec.raw_decode(text[m.start():])
+        except ValueError:
+            continue
+        if isinstance(obj, list) or (isinstance(obj, dict) and obj):
+            found = obj
+    if found is None:
+        raise ValueError("Gemma did not return valid JSON. Try again or enter the details manually.")
+    return found
 
 
 def parse_voice_order(transcript, catalog=None):
-    prompt = f"""Extract explicitly stated shop line items from this Hindi, Hinglish or English voice transcript. Return JSON only: {{"items":[{{"product":string,"quantity":number|null,"unit_price":number|null}}]}}. Do not invent prices, quantities, units, tax, or products. Use null for unstated values; quantity 1 only when clearly implied. Known catalogue: {json.dumps(catalog or {}, ensure_ascii=False)}. Transcript: {transcript}"""
-    data = _json(_generate([{"text": prompt}], max_tokens=1024))
+    prompt = f"""Extract the shop line items explicitly stated in this Hindi, Hinglish or English voice transcript.
+Reply with ONLY one JSON object, no explanation, no markdown.
+Example of the exact format: {{"items":[{{"product":"chawal","quantity":2,"unit_price":60}},{{"product":"tel","quantity":1,"unit_price":null}}]}}
+Rules: product is text, quantity and unit_price are numbers or null. Do not invent prices, quantities, units, tax or products. Use null for anything not stated; use quantity 1 only when clearly implied.
+Known catalogue: {json.dumps(catalog or {}, ensure_ascii=False)}
+Transcript: {transcript}"""
+    data = _json(_generate([{"text": prompt}], max_tokens=2048))
     rows = data if isinstance(data, list) else data.get("items", [])
     out = []
     for r in rows:
@@ -88,8 +105,11 @@ def read_ledger_image(data, mime_type="image/jpeg"):
     try:
         data, mime_type = _prepare_image(data)
     except Exception:
-        pass  # not a normal image: send as is
-    prompt = """Read this handwritten shop ledger page. Return JSON only: {"rows":[{"date":"","customer":"","description":"","debit":0,"credit":0,"confidence":"low|medium|high"}]}. Preserve script and spelling. Transcribe visible rows only. Never infer unclear amounts, balances or transaction types. Use empty strings/null for unreadable fields. Every row needs human review. No explanations, no markdown."""
+        pass
+    prompt = """Read this handwritten shop ledger page.
+Reply with ONLY one JSON object, no explanation, no markdown.
+Example of the exact format: {"rows":[{"date":"12/03","customer":"Ramesh","description":"chawal 2kg","debit":120,"credit":0,"confidence":"medium"}]}
+Rules: confidence is one of low, medium, high. Preserve script and spelling. Transcribe visible rows only. Never infer unclear amounts, balances or transaction types. Use "" or null for unreadable fields. Every row needs human review."""
     image = {"inline_data": {"mime_type": mime_type, "data": base64.b64encode(data).decode()}}
     parsed = _json(_generate([image, {"text": prompt}], max_tokens=4096))
     rows = parsed if isinstance(parsed, list) else parsed.get("rows", [])
