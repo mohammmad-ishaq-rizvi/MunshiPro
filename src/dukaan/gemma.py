@@ -53,20 +53,27 @@ def _generate(parts, max_tokens=2048):
 
 
 def _json(text):
-    """Find the LAST valid JSON object/array in the reply (ignores echoed templates and reasoning)."""
+    """Return the last complete top-level JSON object/array in the reply."""
     text = re.sub(r"```(?:json)?", "", text or "")
     dec = json.JSONDecoder()
     found = None
-    for m in re.finditer(r"[\{\[]", text):
-        try:
-            obj, _ = dec.raw_decode(text[m.start():])
-        except ValueError:
-            continue
-        if isinstance(obj, list) or (isinstance(obj, dict) and obj):
-            found = obj
+    i = 0
+    while i < len(text):
+        if text[i] in "{[":
+            try:
+                obj, end = dec.raw_decode(text[i:])
+                if isinstance(obj, list) or (isinstance(obj, dict) and obj):
+                    found = obj
+                i += end          # jump past this block so inner items are not picked
+                continue
+            except ValueError:
+                pass
+        i += 1
     if found is None:
         raise ValueError("Gemma did not return valid JSON. Try again or enter the details manually.")
-    return found
+    return foundgit add -A
+git commit -m "Fix JSON picking inner item"
+git push origin main --force
 
 
 def parse_voice_order(transcript, catalog=None):
