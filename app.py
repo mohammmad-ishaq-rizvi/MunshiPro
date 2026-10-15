@@ -15,25 +15,126 @@ from dukaan.reminders import run_scheduler
 
 st.set_page_config(page_title="Dukaan Digital",page_icon="📒",layout="wide")
 st.markdown("""<style>
-:root{--navy:#14243b;--indigo:#4659d9;--teal:#087f70;--saffron:#e8a126;--paper:#f4f6f9;--line:#e1e6ee;--ink:#19283d;--muted:#617087}
-.stApp{background:var(--paper);color:var(--ink)}.block-container{max-width:1380px;padding:1.3rem 2rem 3rem}
-[data-testid="stSidebar"]{background:var(--navy)}[data-testid="stSidebar"] *{color:#eef3fb}
-[data-testid="stMetric"]{background:#fff;border:1px solid var(--line);padding:15px 18px;border-radius:8px;box-shadow:0 2px 8px #14243b0a}
-[data-testid="stMetricValue"]{color:var(--navy)}[data-testid="stMetricLabel"]{color:var(--muted)}
-.brand{background:linear-gradient(112deg,#14243b 0%,#283f72 72%,#087f70 140%);color:white;padding:22px 26px;border-radius:8px;margin:4px 0 22px;box-shadow:0 8px 22px #14243b1a}
-.brand h2{font-size:25px;margin:0 0 4px}.brand p{margin:0;color:#dce8fa;font-size:14px}
-div.stButton>button[kind="primary"]{background:var(--indigo);border:0;border-radius:7px;font-weight:650;min-height:44px}
-div.stButton>button{border-radius:7px;border-color:#d2d9e4;min-height:40px}
-[data-testid="stDataFrame"],[data-testid="stDataEditor"]{border:1px solid var(--line);border-radius:8px;overflow:hidden}
-[data-testid="stFileUploader"]{background:#fff;border:1px dashed #8998b3;border-radius:10px;padding:8px}
-h1,h2,h3{color:var(--navy)}.stCaption{color:var(--muted)}
-@media(max-width:700px){.block-container{padding:.8rem .8rem 2rem}.brand{padding:17px}.brand h2{font-size:21px}}
+@import url('https://fonts.googleapis.com/css2?family=Hind:wght@400;500;600;700&family=Rozha+One&display=swap');
+:root{color-scheme:light;--bottle:#0d3b31;--bottle2:#14514a;--paper:#eef3ec;--rule:#dbe5d8;--card:#fbfdf9;--line:#d3ddd0;--ink:#13221d;--muted:#5a6a63;--haldi:#f1b323;--haldi-d:#c58a00;--late:#c2412d;--soon:#2e7d5b;--today:#d99a06}
+html,body,.stApp,[data-testid="stAppViewContainer"]{font-family:'Hind',system-ui,sans-serif;color:var(--ink)}
+.stApp{background:repeating-linear-gradient(to bottom,transparent 0 35px,var(--rule) 35px 36px),var(--paper);background-attachment:local}
+[data-testid="stHeader"]{background:transparent}
+.block-container{max-width:1320px;padding:1.1rem 2.2rem 3rem}
+p,li,label,input,textarea,button,.stMarkdown{font-family:'Hind',system-ui,sans-serif}
+h1,h2,h3,h4{font-family:'Hind',sans-serif;color:var(--bottle);letter-spacing:-.01em}
+[data-testid="stHeading"] h3{font-family:'Rozha One','Hind',serif;font-weight:400;font-size:1.85rem;line-height:1.25;padding-bottom:.45rem;margin-bottom:.4rem;position:relative}
+[data-testid="stHeading"] h3::after{content:"";position:absolute;left:0;bottom:0;width:54px;height:4px;border-radius:2px;background:var(--haldi)}
+h4{font-weight:700}
+.stCaption,[data-testid="stCaptionContainer"]{color:var(--muted)}
+
+/* sidebar */
+[data-testid="stSidebar"]{background:linear-gradient(180deg,var(--bottle) 0%,#0a2e26 100%);border-right:0}
+[data-testid="stSidebar"] *{color:#e6f1ea}
+[data-testid="stSidebar"] [data-baseweb="select"]>div{background:#12483f;border:1px solid #2a6a5d;border-radius:10px}
+[data-testid="stSidebar"] [role="radiogroup"]{gap:3px}
+[data-testid="stSidebar"] [role="radiogroup"] label{padding:10px 14px;border-radius:10px;border-left:3px solid transparent;transition:background .15s,border-color .15s,transform .15s;cursor:pointer;width:100%}
+[data-testid="stSidebar"] [role="radiogroup"] label>div:first-child{display:none}
+[data-testid="stSidebar"] [role="radiogroup"] label:hover{background:#14514a;transform:translateX(2px)}
+[data-testid="stSidebar"] [role="radiogroup"] label:has(input:checked){background:#17584f;border-left-color:var(--haldi);font-weight:700}
+[data-testid="stSidebar"] [role="radiogroup"] label:has(input:checked) p{color:#fff}
+.sb-brand{display:flex;gap:12px;align-items:center;padding:6px 4px 18px;border-bottom:1px solid #245f54;margin-bottom:14px}
+.sb-mark{width:46px;height:46px;border-radius:12px;background:var(--haldi);color:#2a1d00!important;display:grid;place-items:center;font:400 26px 'Rozha One',serif;flex:none}
+.sb-brand b{display:block;font-size:19px;line-height:1.1;color:#fff}.sb-brand span{font-size:12.5px;color:#a9cbbd}
+
+/* top bar */
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:2px 0 18px;padding:10px 4px;border-bottom:2px solid var(--bottle)}
+.topbar b{font:400 22px 'Rozha One','Hind',serif;color:var(--bottle)}.topbar small{margin-left:10px;color:var(--muted);font-size:14px}
+.pill{display:inline-flex;align-items:center;gap:7px;background:var(--bottle);color:#fff;border-radius:999px;padding:5px 13px 5px 9px;font-size:13px;font-weight:600;white-space:nowrap}
+.pill i{width:9px;height:9px;border-radius:50%;background:var(--haldi);box-shadow:0 0 0 0 #f1b32388;animation:pulse 2.4s infinite}
+@keyframes pulse{70%{box-shadow:0 0 0 8px #f1b32300}100%{box-shadow:0 0 0 0 #f1b32300}}
+
+/* overview hero: the day's ledger page */
+.hero{display:grid;grid-template-columns:1.15fr 1fr;gap:28px;align-items:stretch;margin:6px 0 26px}
+.hero-l{background:var(--bottle);color:#fff;border-radius:16px;padding:30px 32px;position:relative;overflow:hidden}
+.hero-l::before{content:"";position:absolute;right:-40px;top:-40px;width:190px;height:190px;border-radius:50%;border:26px solid #14514a}
+.hero-l small{color:#a9cbbd;font-size:14px;position:relative}
+.hero-l h1{font:400 clamp(26px,3.2vw,40px)/1.25 'Rozha One','Hind',serif;color:#fff;margin:8px 0 0;position:relative;max-width:16ch}
+.ledger{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px 26px;box-shadow:0 10px 26px #0d3b3114;position:relative}
+.ledger::before{content:"";position:absolute;left:44px;top:0;bottom:0;width:2px;background:#e6a7a0aa}
+.lrow{display:flex;align-items:baseline;gap:8px;padding:13px 0 13px 40px;border-bottom:1px solid var(--rule);animation:inkin .6s both}
+.lrow:nth-child(2){animation-delay:.12s}.lrow:nth-child(3){animation-delay:.24s}
+.lrow span{color:var(--muted);font-size:15px}
+.lrow em{flex:1;border-bottom:2px dotted #b8c7b5;transform:translateY(-4px)}
+.lrow b{font-size:22px;font-variant-numeric:tabular-nums;color:var(--bottle)}
+.lrow.total b{font-size:30px;padding-bottom:3px;border-bottom:3px double var(--bottle)}
+.lrow:last-child{border-bottom:0}
+@keyframes inkin{from{opacity:0;clip-path:inset(0 100% 0 0)}to{opacity:1;clip-path:inset(0 0 0 0)}}
+
+/* metrics on other pages: ledger totals */
+[data-testid="stMetric"]{background:var(--card);border:1px solid var(--line);border-top:4px solid var(--bottle);padding:14px 18px;border-radius:12px;box-shadow:0 6px 18px #0d3b3110}
+[data-testid="stMetricValue"]{color:var(--bottle);font-variant-numeric:tabular-nums;font-weight:700}
+[data-testid="stMetricLabel"]{color:var(--muted)}
+
+/* buttons */
+div.stButton>button,div[data-testid="stDownloadButton"]>button,a[data-testid="stBaseLinkButton-secondary"],a[data-testid="stBaseLinkButton-primary"]{border-radius:10px;border:1.5px solid var(--bottle);background:#fff;color:var(--bottle);font-weight:600;min-height:44px;transition:transform .12s,box-shadow .12s,background .12s}
+div.stButton>button:hover,div[data-testid="stDownloadButton"]>button:hover,a[data-testid^="stBaseLinkButton"]:hover{background:#eaf3ec;transform:translateY(-1px);box-shadow:0 6px 14px #0d3b3122;border-color:var(--bottle)}
+div.stButton>button[kind="primary"],div[data-testid="stDownloadButton"]>button[kind="primary"],button[data-testid="stBaseButton-primary"],button[data-testid="stFormSubmitButton"]{background:var(--haldi);color:#2a1d00;border:0;font-weight:700}
+button[data-testid="stBaseButton-primary"]:hover,button[data-testid="stBaseButton-primaryFormSubmit"]:hover{background:#ffc531;color:#2a1d00}
+button[data-testid="stBaseButton-primaryFormSubmit"]{background:var(--haldi);color:#2a1d00;border:0;font-weight:700}
+a[data-testid^="stBaseLinkButton"]{background:#25D366;border-color:#1da851;color:#06361a!important}
+a[data-testid^="stBaseLinkButton"]:hover{background:#2fe173}
+:focus-visible{outline:3px solid var(--haldi)!important;outline-offset:2px}
+
+/* inputs */
+[data-baseweb="input"],[data-baseweb="textarea"],[data-baseweb="select"]>div{border-radius:10px!important;background:#fff}
+[data-baseweb="input"]:focus-within,[data-baseweb="textarea"]:focus-within{box-shadow:0 0 0 3px #f1b32366;border-color:var(--haldi-d)!important}
+[data-testid="stForm"]{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px;box-shadow:0 8px 22px #0d3b3110}
+[data-testid="stVerticalBlockBorderWrapper"]:has(>div>[data-testid="stVerticalBlock"]>[data-testid="stElementContainer"] h4){border-radius:14px}
+[data-testid="stVerticalBlockBorderWrapper"]{border-color:var(--line)!important;background:var(--card);transition:box-shadow .15s,transform .15s}
+[data-testid="stColumn"] [data-testid="stVerticalBlockBorderWrapper"]:hover{box-shadow:0 12px 26px #0d3b3118;transform:translateY(-2px)}
+[data-testid="stDataFrame"],[data-testid="stDataEditor"]{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff}
+[data-testid="stFileUploader"] section{background:var(--card);border:2px dashed #7d9a8c;border-radius:14px;transition:border-color .15s,background .15s}
+[data-testid="stFileUploader"] section:hover{border-color:var(--haldi-d);background:#fffbea}
+[data-testid="stAlert"]{border-radius:12px;border:1px solid var(--line)}
+[data-testid="stExpander"]{border-radius:12px;border-color:var(--line);background:var(--card)}
+hr{border-color:var(--bottle)!important;opacity:.25}
+
+/* khata (udhaar) cards */
+.udhaar{display:flex;align-items:center;gap:16px;background:var(--card);border:1px solid var(--line);border-left:6px solid var(--soon);border-radius:12px;padding:14px 18px;margin:14px 0 8px;box-shadow:0 5px 14px #0d3b3110}
+.udhaar.late{border-left-color:var(--late)}.udhaar.today{border-left-color:var(--today)}
+.udhaar .who{flex:1;min-width:0}.udhaar .who b{font-size:18px;color:var(--bottle)}.udhaar .who div{color:var(--muted);font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.udhaar .amt{font-size:24px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink)}
+.chip{font-size:12.5px;font-weight:700;border-radius:999px;padding:4px 12px;background:#dff0e6;color:#1b5e40;white-space:nowrap}
+.udhaar.late .chip{background:#f9dcd6;color:#8f2615}.udhaar.today .chip{background:#fdeec2;color:#7a5600}
+
+/* stock cards */
+.stockgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin:12px 0 18px}
+.stk{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;box-shadow:0 5px 14px #0d3b3110}
+.stk b{display:block;font-size:16px;color:var(--bottle);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stk .q{font-size:28px;font-weight:700;font-variant-numeric:tabular-nums}.stk .q small{font-size:14px;color:var(--muted);font-weight:500;margin-left:4px}
+.bar{height:8px;border-radius:5px;background:#e3ebe1;margin:8px 0 6px;overflow:hidden}.bar i{display:block;height:100%;border-radius:5px;background:var(--soon);transition:width .5s}
+.stk.low .bar i{background:var(--late)}.stk.low .q{color:var(--late)}
+.stk span{font-size:12.5px;color:var(--muted)}
+
+@media(max-width:900px){.hero{grid-template-columns:1fr}.block-container{padding:.8rem .9rem 2.5rem}.topbar small{display:none}.udhaar{flex-wrap:wrap}.ledger::before{left:30px}.lrow{padding-left:30px}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>""",unsafe_allow_html=True)
+import html as _html
+_DAYS_HI=["सोमवार","मंगलवार","बुधवार","गुरुवार","शुक्रवार","शनिवार","रविवार"]
+def _day_label(d,lang): return (f"{_DAYS_HI[d.weekday()]}, {d.strftime('%d/%m/%Y')}" if lang!="English" else d.strftime("%A, %d %B %Y"))
+def hero_html(greeting,day,rows):
+    r="".join(f'<div class="lrow{" total" if tot else ""}"><span>{_html.escape(a)}</span><em></em><b>{_html.escape(b)}</b></div>' for a,b,tot in rows)
+    return f'<div class="hero"><div class="hero-l"><small>{_html.escape(day)}</small><h1>{_html.escape(greeting)}</h1></div><div class="ledger">{r}</div></div>'
+def udhaar_html(name,note,amount,due_label,state):
+    return f'<div class="udhaar {state}"><div class="who"><b>{_html.escape(name)}</b><div>{_html.escape(note or "—")}</div></div><span class="chip">{_html.escape(due_label)}</span><span class="amt">₹{amount:,.2f}</span></div>'
+def stock_html(items):
+    out=""
+    for i in items:
+        thr=float(i["threshold"] or 0); q=float(i["quantity"]); low=q<=thr; pct=min(100,(q/(thr*3 if thr>0 else max(q,1)))*100)
+        out+=f'<div class="stk{" low" if low else ""}"><b>{_html.escape(str(i["product"]))}</b><div class="q">{q:g}<small>{_html.escape(str(i["unit"]))}</small></div><div class="bar"><i style="width:{pct:.0f}%"></i></div><span>{"Low · alert at" if low else "Alert at"} {thr:g}</span></div>'
+    return f'<div class="stockgrid">{out}</div>'
 L={"English":{"nav":["Overview","Voice billing","Khata & reminders","Smart inventory","Monthly reports","Documents & analysis","Ledger","Invoice history"],"title":"Dukaan Digital","sub":"Your shop’s digital munim · Powered by Gemma 4","new":"Create a bill","draft":"Review your bill","confirm":"Confirm and issue invoice","upload":"Upload a bill, invoice, receipt, or ledger","review":"Review extracted information before saving","no_data":"No saved business data yet.","search":"Search invoices","lang":"Language","tax":"GST rate (%)","tax_type":"Tax treatment","customer":"Customer (optional)","record":"Save reviewed records","error":"Needs your review","recent":"Recent invoices","revenue":"Recorded invoice value","docs":"Documents processed","lines":"Review extracted rows","ledger":"Ledger entries","analyze":"Analyze document","english":"English","hindi":"हिन्दी"},"हिन्दी":{"nav":["डैशबोर्ड","आवाज़ से बिल","उधार और रिमाइंडर","स्मार्ट इन्वेंटरी","मासिक रिपोर्ट","दस्तावेज़ और विश्लेषण","बही-खाता","बिल इतिहास"],"title":"दुकान डिजिटल","sub":"आपकी दुकान का डिजिटल मुनीम · Gemma 4 द्वारा संचालित","new":"नया बिल बनाएं","draft":"बिल जांचें","confirm":"पुष्टि करें और बिल जारी करें","upload":"बिल, रसीद या बही-खाता अपलोड करें","review":"सहेजने से पहले निकली जानकारी जांचें","no_data":"अभी कोई व्यवसाय रिकॉर्ड सहेजा नहीं है।","search":"बिल खोजें","lang":"भाषा","tax":"GST दर (%)","tax_type":"कर का प्रकार","customer":"ग्राहक (वैकल्पिक)","record":"जांचे हुए रिकॉर्ड सहेजें","error":"जांच आवश्यक","recent":"हाल के बिल","revenue":"दर्ज बिल राशि","docs":"प्रसंस्कृत दस्तावेज़","lines":"निकली पंक्तियां जांचें","ledger":"बही-खाता प्रविष्टियां","analyze":"दस्तावेज़ विश्लेषण","english":"English","hindi":"हिन्दी"}}
 TODAY=datetime.now(ZoneInfo("Asia/Kolkata")).date()
+st.sidebar.markdown('<div class="sb-brand"><div class="sb-mark">मु</div><div><b>MunshiPro</b><span>Dukaan Digital · दुकान डिजिटल</span></div></div>',unsafe_allow_html=True)
 if "lang" not in st.session_state: st.session_state.lang="English"
 st.session_state.lang=st.sidebar.selectbox("Language / भाषा",["English","हिन्दी"],index=0 if st.session_state.lang=="English" else 1)
-t=L[st.session_state.lang]; st.markdown(f'<div class="brand"><h2>{t["title"]}</h2><p>{t["sub"]}</p></div>',unsafe_allow_html=True)
+t=L[st.session_state.lang]; st.markdown(f'<div class="topbar"><div><b>{t["title"]}</b><small>{t["sub"]}</small></div><span class="pill"><i></i>Gemma 4</span></div>',unsafe_allow_html=True)
 db=Store(Path(os.getenv("DUKAAN_DB_PATH", str(Path(__file__).parent/"dukaan.sqlite3"))))
 if all(os.getenv(k) for k in ("WHATSAPP_ACCESS_TOKEN","WHATSAPP_PHONE_NUMBER_ID","META_GRAPH_VERSION","WHATSAPP_TEMPLATE_NAME")):
     @st.cache_resource
@@ -49,23 +150,22 @@ page=t["nav"][[f"{icon}  {label}" for icon,label in zip(icons,t["nav"])].index(p
 invoices=db.invoices()
 
 if page==t["nav"][0]:
-    st.subheader(("Good day. Here’s your shop at a glance." if st.session_state.lang=="English" else "नमस्ते, आज आपकी दुकान का हाल।")); q1,q2,q3=st.columns(3)
-    q1.metric(t["recent"],len(invoices));q2.metric(t["revenue"],f"₹{sum(float(x['total']) for x in invoices):,.2f}");q3.metric(t["docs"],len(db.documents()))
+    st.markdown(hero_html(("Good day. Here’s your shop at a glance." if st.session_state.lang=="English" else "नमस्ते, आज आपकी दुकान का हाल।"),_day_label(TODAY,st.session_state.lang),[(t["recent"],str(len(invoices)),False),(t["revenue"],f"₹{sum(float(x['total']) for x in invoices):,.2f}",True),(t["docs"],str(len(db.documents())),False)]),unsafe_allow_html=True)
     st.subheader(t["recent"]); search=st.text_input(t["search"])
     rows=[i for i in invoices if search.casefold() in (i["number"]+i["customer"]).casefold()]
     if rows: st.dataframe(pd.DataFrame(rows)[["number","created","customer","status","total"]],use_container_width=True,hide_index=True)
     else:
         st.info(t["no_data"])
         a,b,c=st.columns(3)
-        with a:
+        with a.container(border=True):
             st.markdown("#### 🎙️ Voice billing")
             st.caption("Create a reviewed invoice by speaking or typing an order.")
             if st.button("Create your first bill →",key="quick_bill"): st.session_state.quick_nav=t["nav"][1]
-        with b:
+        with b.container(border=True):
             st.markdown("#### ▧ Upload records")
             st.caption("Bring in sales sheets, receipts, or ledger pages.")
             if st.button("Analyze a document →",key="quick_upload"): st.session_state.quick_nav=t["nav"][5]
-        with c:
+        with c.container(border=True):
             st.markdown("#### ≡ Digital ledger")
             st.caption("Review extracted entries and export verified records.")
             if st.button("Open ledger →",key="quick_ledger"): st.session_state.quick_nav=t["nav"][6]
@@ -126,7 +226,7 @@ elif page==t["nav"][2]:
         st.markdown("#### Outstanding balances")
         for credit in credits:
             due_label="Due today" if credit["due_date"]==TODAY.isoformat() else ("Overdue" if credit["due_date"]<TODAY.isoformat() else "Due "+credit["due_date"])
-            st.write(f"**{credit['customer']}** · ₹{float(credit['amount']):,.2f} · {due_label} · {credit['note'] or '—'}")
+            st.markdown(udhaar_html(credit['customer'],credit['note'],float(credit['amount']),due_label,("late" if credit["due_date"]<TODAY.isoformat() else "today" if credit["due_date"]==TODAY.isoformat() else "soon")),unsafe_allow_html=True)
             digits="".join(c for c in credit["phone"] if c.isdigit())[-10:]; pay=f"upi://pay?pa={quote(credit['upi_id'])}&pn={quote(credit['customer'])}&am={quote(str(credit['amount']))}&cu=INR" if credit["upi_id"] else ""
             message=f"Namaste {credit['customer']}, a friendly reminder that ₹{float(credit['amount']):,.2f} is due on {credit['due_date']}. {('Pay here: '+pay) if pay else 'Please contact the shop to pay by UPI.'} Dhanyavaad!"
             a,b=st.columns([1,4]); a.link_button("Send WhatsApp nudge",f"https://wa.me/91{digits}?text={quote(message)}",use_container_width=True)
@@ -146,7 +246,8 @@ elif page==t["nav"][3]:
             else: st.error("Enter a product name.")
     stock=db.inventory()
     if stock:
-        st.dataframe(pd.DataFrame(stock)[["product","quantity","unit","threshold","supplier_phone"]],use_container_width=True,hide_index=True)
+        st.markdown(stock_html(stock),unsafe_allow_html=True)
+        with st.expander("Table view / तालिका"): st.dataframe(pd.DataFrame(stock)[["product","quantity","unit","threshold","supplier_phone"]],use_container_width=True,hide_index=True)
         low=[i for i in stock if i["quantity"]<=i["threshold"]]
         for item in low:
             st.warning(f"{item['product']} is low: {item['quantity']:g} {item['unit']} left (alert at {item['threshold']:g}).")
