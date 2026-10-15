@@ -1,55 +1,53 @@
 """Optional Gemma 4 helpers. Model output is always treated as an editable draft."""
+import base64
+import io
 import json
 import os
 import re
 
+import requests
+from PIL import Image, ImageOps
+
 MODEL = os.getenv("GEMMA_MODEL", "gemma-4-26b-a4b-it")
+API_URL = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
 
 
-def _api_key():
-    # 1) Streamlit Secrets (Streamlit Cloud or .streamlit/secrets.toml)
+def _secret(name):
     try:
         import streamlit as st
-        key = st.secrets.get("GEMINI_API_KEY")
-        if key:
-            return str(key).strip()
+        value = st.secrets.get(name)
+        if value:
+            return str(value).strip()
     except Exception:
         pass
-    # 2) Environment variable (PyCharm, Docker, Render)
-    return (os.getenv("GEMINI_API_KEY") or "").strip()
+    return (os.getenv(name) or "").strip()
 
 
-def _model():
-    try:
-        import streamlit as st
-        m = st.secrets.get("GEMMA_MODEL")
-        if m:
-            return str(m).strip()
-    except Exception:
-        pass
-    return MODEL
-
-
-def _generate(contents):
-    """Create a client, keep a reference for the whole call, then close it."""
-    key = _api_key()
+def _generate(parts, max_tokens=2048):
+    key = _secret("GEMINI_API_KEY")
     if not key:
         raise RuntimeError("Add GEMINI_API_KEY to Streamlit Secrets or the environment to use Gemma 4.")
-    from google import genai
-    from google.genai import types
-    client = genai.Client(api_key=key)  # held in a variable so it is not garbage collected mid-request
-    try:
-        response = client.models.generate_content(
-            model=_model(),
-            contents=contents,
-            config=types.GenerateContentConfig(temperature=0),
-        )
-        return response.text or ""
-    finally:
+    model = _secret("GEMMA_MODEL") or MODEL
+    body = {
+        "contents": [{"parts": parts}],
+        "generationConfig": {"temperature": 0, "maxOutputTokens": max_tokens},
+    }
+    resp = requests.post(
+        API_URL.format(model=model),
+        headers={"x-goog-api-key": key, "Content-Type": "application/json"},
+        json=body,
+        timeout=90,
+    )
+    if resp.status_code != 200:
         try:
-            client.close()
+            msg = resp.json()["error"]["message"]
         except Exception:
-            pass
+            msg = resp.text[:300]
+        raise RuntimeError(f"Gemini API error {resp.status_code}: {msg}")
+    try:
+        return "".join(p.get("text", "") for p in resp.json()["candidates"][0]["content"]["parts"])
+    except Exception:
+        raise RuntimeError("Gemma returned no text. Try again or enter the details manually.")
 
 
 def _json(text):
@@ -61,7 +59,7 @@ def _json(text):
 
 def parse_voice_order(transcript, catalog=None):
     prompt = f"""Extract explicitly stated shop line items from this Hindi, Hinglish or English voice transcript. Return JSON only: {{"items":[{{"product":string,"quantity":number|null,"unit_price":number|null}}]}}. Do not invent prices, quantities, units, tax, or products. Use null for unstated values; quantity 1 only when clearly implied. Known catalogue: {json.dumps(catalog or {}, ensure_ascii=False)}. Transcript: {transcript}"""
-    data = _json(_generate(prompt))
+    data = _json(_generate([{"text": prompt}], max_tokens=1024))
     rows = data if isinstance(data, list) else data.get("items", [])
     out = []
     for r in rows:
@@ -76,10 +74,23 @@ def parse_voice_order(transcript, catalog=None):
     return out
 
 
+def _prepare_image(data, max_side=1600):
+    """Fix rotation, shrink and compress so the upload and the model are faster."""
+    img = Image.open(io.BytesIO(data))
+    img = ImageOps.exif_transpose(img).convert("RGB")
+    img.thumbnail((max_side, max_side))
+    buf = io.BytesIO()
+    img.save(buf, format="JPEG", quality=85, optimize=True)
+    return buf.getvalue(), "image/jpeg"
+
+
 def read_ledger_image(data, mime_type="image/jpeg"):
-    from google.genai import types
-    image = types.Part.from_bytes(data=data, mime_type=mime_type)
-    prompt = """Read this handwritten shop ledger page. Return JSON only: {"rows":[{"date":"","customer":"","description":"","debit":0,"credit":0,"confidence":"low|medium|high"}]}. Preserve script and spelling. Transcribe visible rows only. Never infer unclear amounts, balances or transaction types. Use empty strings/null for unreadable fields. Every row needs human review."""
-    parsed = _json(_generate([image, prompt]))
+    try:
+        data, mime_type = _prepare_image(data)
+    except Exception:
+        pass  # not a normal image: send as is
+    prompt = """Read this handwritten shop ledger page. Return JSON only: {"rows":[{"date":"","customer":"","description":"","debit":0,"credit":0,"confidence":"low|medium|high"}]}. Preserve script and spelling. Transcribe visible rows only. Never infer unclear amounts, balances or transaction types. Use empty strings/null for unreadable fields. Every row needs human review. No explanations, no markdown."""
+    image = {"inline_data": {"mime_type": mime_type, "data": base64.b64encode(data).decode()}}
+    parsed = _json(_generate([image, {"text": prompt}], max_tokens=4096))
     rows = parsed if isinstance(parsed, list) else parsed.get("rows", [])
     return [{**r, "reviewed": False} for r in rows]
