@@ -1,0 +1,12 @@
+[server]
+headless = true
+address = "0.0.0.0"
+enableCORS = true
+maxUploadSize = 15
+
+[theme]
+base = "light"
+primaryColor = "#4659d9"
+backgroundColor = "#f4f6f9"
+secondaryBackgroundColor = "#ffffff"
+textColor = "#19283d"

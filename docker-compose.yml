@@ -1,0 +1,12 @@
+services:
+  munshipro:
+    build: .
+    ports:
+      - "8501:8501"
+    env_file:
+      - .env
+    volumes:
+      - munshi-data:/data
+    restart: unless-stopped
+volumes:
+  munshi-data:

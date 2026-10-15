@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: munshipro
+    runtime: docker
+    plan: starter
+    region: singapore
+    healthCheckPath: /_stcore/health
+    disk:
+      name: munshipro-data
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: DUKAAN_DB_PATH
+        value: /data/dukaan.sqlite3
