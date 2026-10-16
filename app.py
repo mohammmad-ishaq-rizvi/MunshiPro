@@ -13,7 +13,7 @@ from dukaan.gemma import parse_voice_order, read_ledger_image
 from dukaan.reports import make_monthly_pdf, send_summary_pdf
 from dukaan.reminders import run_scheduler
 
-st.set_page_config(page_title="Dukaan Digital",page_icon="📒",layout="wide")
+st.set_page_config(page_title="MunshiPro",page_icon="📒",layout="wide")
 st.markdown("""<style>
 @import url('https://fonts.googleapis.com/css2?family=Hind:wght@400;500;600;700&family=Rozha+One&display=swap');
 :root{color-scheme:light;--bottle:#0d3b31;--bottle2:#14514a;--paper:#eef3ec;--rule:#dbe5d8;--card:#fbfdf9;--line:#d3ddd0;--ink:#13221d;--muted:#5a6a63;--haldi:#f1b323;--haldi-d:#c58a00;--late:#c2412d;--soon:#2e7d5b;--today:#d99a06}
