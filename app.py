@@ -16,36 +16,36 @@ from dukaan.reminders import run_scheduler
 st.set_page_config(page_title="Dukaan Digital",page_icon="📒",layout="wide")
 st.markdown("""<style>
 @import url('https://fonts.googleapis.com/css2?family=Hind:wght@400;500;600;700&family=Rozha+One&display=swap');
-:root{color-scheme:light;--bottle:#0d3b31;--bottle2:#14514a;--paper:#eef3ec;--rule:#dbe5d8;--card:#fbfdf9;--line:#d3ddd0;--ink:#13221d;--muted:#5a6a63;--haldi:#f1b323;--haldi-d:#c58a00;--late:#c2412d;--soon:#2e7d5b;--today:#d99a06}
+:root{color-scheme:light;--bottle:#315b40;--bottle2:#426c50;--paper:#f5f0e6;--rule:#e4dccd;--card:#fffdf8;--line:#e2dacb;--ink:#292a26;--muted:#77766f;--haldi:#f1bd75;--haldi-d:#a76b29;--late:#b94c43;--soon:#547a50;--today:#b87528;--sage:#dce7d2;--charcoal:#242522}
 html,body,.stApp,[data-testid="stAppViewContainer"]{font-family:'Hind',system-ui,sans-serif;color:var(--ink)}
-.stApp{background:repeating-linear-gradient(to bottom,transparent 0 35px,var(--rule) 35px 36px),var(--paper);background-attachment:local}
+.stApp{background:var(--paper)}
 [data-testid="stHeader"]{background:transparent}
 .block-container{max-width:1320px;padding:1.1rem 2.2rem 3rem}
 p,li,label,input,textarea,button,.stMarkdown{font-family:'Hind',system-ui,sans-serif}
-h1,h2,h3,h4{font-family:'Hind',sans-serif;color:var(--bottle);letter-spacing:-.01em}
+h1,h2,h3,h4{font-family:'Hind',sans-serif;color:var(--ink);letter-spacing:-.01em}
 [data-testid="stHeading"] h3{font-family:'Rozha One','Hind',serif;font-weight:400;font-size:1.85rem;line-height:1.25;padding-bottom:.45rem;margin-bottom:.4rem;position:relative}
 [data-testid="stHeading"] h3::after{content:"";position:absolute;left:0;bottom:0;width:54px;height:4px;border-radius:2px;background:var(--haldi)}
 h4{font-weight:700}
 .stCaption,[data-testid="stCaptionContainer"]{color:var(--muted)}
 
 /* sidebar */
-[data-testid="stSidebar"]{background:linear-gradient(180deg,var(--bottle) 0%,#0a2e26 100%);border-right:0}
+[data-testid="stSidebar"]{background:var(--charcoal);border-right:0}
 [data-testid="stSidebar"] *{color:#e6f1ea}
-[data-testid="stSidebar"] [data-baseweb="select"]>div{background:#12483f;border:1px solid #2a6a5d;border-radius:10px}
+[data-testid="stSidebar"] [data-baseweb="select"]>div{background:#343630;border:1px solid #51534c;border-radius:10px}
 [data-testid="stSidebar"] [role="radiogroup"]{gap:3px}
 [data-testid="stSidebar"] [role="radiogroup"] label{padding:10px 14px;border-radius:10px;border-left:3px solid transparent;transition:background .15s,border-color .15s,transform .15s;cursor:pointer;width:100%}
 [data-testid="stSidebar"] [role="radiogroup"] label>div:first-child{display:none}
-[data-testid="stSidebar"] [role="radiogroup"] label:hover{background:#14514a;transform:translateX(2px)}
-[data-testid="stSidebar"] [role="radiogroup"] label:has(input:checked){background:#17584f;border-left-color:var(--haldi);font-weight:700}
+[data-testid="stSidebar"] [role="radiogroup"] label:hover{background:#343630;transform:translateX(2px)}
+[data-testid="stSidebar"] [role="radiogroup"] label:has(input:checked){background:#3b4038;border-left-color:#b7c99e;font-weight:700}
 [data-testid="stSidebar"] [role="radiogroup"] label:has(input:checked) p{color:#fff}
 .sb-brand{display:flex;gap:12px;align-items:center;padding:6px 4px 18px;border-bottom:1px solid #245f54;margin-bottom:14px}
-.sb-mark{width:46px;height:46px;border-radius:12px;background:var(--haldi);color:#2a1d00!important;display:grid;place-items:center;font:400 26px 'Rozha One',serif;flex:none}
+.sb-mark{width:46px;height:46px;border-radius:12px;background:#dce7d2;color:#315b40!important;display:grid;place-items:center;font:400 26px 'Rozha One',serif;flex:none}
 .sb-brand b{display:block;font-size:19px;line-height:1.1;color:#fff}.sb-brand span{font-size:12.5px;color:#a9cbbd}
 
 /* top bar */
-.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:2px 0 18px;padding:10px 4px;border-bottom:2px solid var(--bottle)}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:2px 0 24px;padding:10px 4px 15px;border-bottom:1px solid var(--line)}
 .topbar b{font:400 22px 'Rozha One','Hind',serif;color:var(--bottle)}.topbar small{margin-left:10px;color:var(--muted);font-size:14px}
-.pill{display:inline-flex;align-items:center;gap:7px;background:var(--bottle);color:#fff;border-radius:999px;padding:5px 13px 5px 9px;font-size:13px;font-weight:600;white-space:nowrap}
+.pill{display:inline-flex;align-items:center;gap:7px;background:#e2eadb;color:#315b40;border-radius:999px;padding:5px 13px 5px 9px;font-size:13px;font-weight:600;white-space:nowrap}
 .pill i{width:9px;height:9px;border-radius:50%;background:var(--haldi);box-shadow:0 0 0 0 #f1b32388;animation:pulse 2.4s infinite}
 @keyframes pulse{70%{box-shadow:0 0 0 8px #f1b32300}100%{box-shadow:0 0 0 0 #f1b32300}}
 
@@ -70,6 +70,23 @@ h4{font-weight:700}
 [data-testid="stMetric"]{background:var(--card);border:1px solid var(--line);border-top:4px solid var(--bottle);padding:14px 18px;border-radius:12px;box-shadow:0 6px 18px #0d3b3110}
 [data-testid="stMetricValue"]{color:var(--bottle);font-variant-numeric:tabular-nums;font-weight:700}
 [data-testid="stMetricLabel"]{color:var(--muted)}
+
+/* dashboard: calm paper palette and direct paths into the core workflows */
+.dash-head{display:flex;align-items:end;justify-content:space-between;margin:8px 0 20px}
+.dash-head h1{font:500 clamp(28px,3vw,38px)/1.18 'Hind',sans-serif;color:var(--ink);margin:0;letter-spacing:-.04em}
+.dash-head p{margin:6px 0 0;color:var(--muted);font-size:15px}
+.action-card{min-height:156px;padding:8px 4px 12px}
+.action-card .eyebrow{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;opacity:.72}
+.action-card h3{font-size:24px;margin:12px 0 5px;color:var(--ink)}
+.action-card p{max-width:38ch;margin:0;color:#454841;font-size:14px;line-height:1.5}
+.action-icon{font-size:26px;line-height:1;margin-bottom:12px}
+.action-scan .action-icon{color:#426c50}.action-voice .action-icon{color:#a76b29}.action-gst .action-icon{color:#756fb3}
+.gst-strip{margin:18px 0 28px}
+.section-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:30px 0 10px}
+.section-head h2{font-size:21px;margin:0;color:var(--ink)}
+[data-testid="stVerticalBlockBorderWrapper"]:has(.action-scan){background:#dce7d2!important;border-color:#c8d7bb!important}
+[data-testid="stVerticalBlockBorderWrapper"]:has(.action-voice){background:#f7e4cb!important;border-color:#ead0af!important}
+[data-testid="stVerticalBlockBorderWrapper"]:has(.action-gst){background:#e9e6f5!important;border-color:#d6d1ed!important}
 
 /* buttons */
 div.stButton>button,div[data-testid="stDownloadButton"]>button,a[data-testid="stBaseLinkButton-secondary"],a[data-testid="stBaseLinkButton-primary"]{border-radius:10px;border:1.5px solid var(--bottle);background:#fff;color:var(--bottle);font-weight:600;min-height:44px;transition:transform .12s,box-shadow .12s,background .12s}
@@ -112,7 +129,7 @@ hr{border-color:var(--bottle)!important;opacity:.25}
 .stk.low .bar i{background:var(--late)}.stk.low .q{color:var(--late)}
 .stk span{font-size:12.5px;color:var(--muted)}
 
-@media(max-width:900px){.hero{grid-template-columns:1fr}.block-container{padding:.8rem .9rem 2.5rem}.topbar small{display:none}.udhaar{flex-wrap:wrap}.ledger::before{left:30px}.lrow{padding-left:30px}}
+@media(max-width:900px){.hero{grid-template-columns:1fr}.block-container{padding:.8rem .9rem 2.5rem}.topbar small{display:none}.udhaar{flex-wrap:wrap}.ledger::before{left:30px}.lrow{padding-left:30px}.dash-head{align-items:start;flex-direction:column}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>""",unsafe_allow_html=True)
 import html as _html
@@ -129,12 +146,12 @@ def stock_html(items):
         thr=float(i["threshold"] or 0); q=float(i["quantity"]); low=q<=thr; pct=min(100,(q/(thr*3 if thr>0 else max(q,1)))*100)
         out+=f'<div class="stk{" low" if low else ""}"><b>{_html.escape(str(i["product"]))}</b><div class="q">{q:g}<small>{_html.escape(str(i["unit"]))}</small></div><div class="bar"><i style="width:{pct:.0f}%"></i></div><span>{"Low · alert at" if low else "Alert at"} {thr:g}</span></div>'
     return f'<div class="stockgrid">{out}</div>'
-L={"English":{"nav":["Overview","Voice billing","Khata & reminders","Smart inventory","Monthly reports","Documents & analysis","Ledger","Invoice history"],"title":"Dukaan Digital","sub":"Your shop’s digital munim · Powered by Gemma 4","new":"Create a bill","draft":"Review your bill","confirm":"Confirm and issue invoice","upload":"Upload a bill, invoice, receipt, or ledger","review":"Review extracted information before saving","no_data":"No saved business data yet.","search":"Search invoices","lang":"Language","tax":"GST rate (%)","tax_type":"Tax treatment","customer":"Customer (optional)","record":"Save reviewed records","error":"Needs your review","recent":"Recent invoices","revenue":"Recorded invoice value","docs":"Documents processed","lines":"Review extracted rows","ledger":"Ledger entries","analyze":"Analyze document","english":"English","hindi":"हिन्दी"},"हिन्दी":{"nav":["डैशबोर्ड","आवाज़ से बिल","उधार और रिमाइंडर","स्मार्ट इन्वेंटरी","मासिक रिपोर्ट","दस्तावेज़ और विश्लेषण","बही-खाता","बिल इतिहास"],"title":"दुकान डिजिटल","sub":"आपकी दुकान का डिजिटल मुनीम · Gemma 4 द्वारा संचालित","new":"नया बिल बनाएं","draft":"बिल जांचें","confirm":"पुष्टि करें और बिल जारी करें","upload":"बिल, रसीद या बही-खाता अपलोड करें","review":"सहेजने से पहले निकली जानकारी जांचें","no_data":"अभी कोई व्यवसाय रिकॉर्ड सहेजा नहीं है।","search":"बिल खोजें","lang":"भाषा","tax":"GST दर (%)","tax_type":"कर का प्रकार","customer":"ग्राहक (वैकल्पिक)","record":"जांचे हुए रिकॉर्ड सहेजें","error":"जांच आवश्यक","recent":"हाल के बिल","revenue":"दर्ज बिल राशि","docs":"प्रसंस्कृत दस्तावेज़","lines":"निकली पंक्तियां जांचें","ledger":"बही-खाता प्रविष्टियां","analyze":"दस्तावेज़ विश्लेषण","english":"English","hindi":"हिन्दी"}}
+L={"English":{"nav":["Dashboard","Voice Entry","Khata & Reminders","Smart Inventory","GST Reports","Scan Bahi-Khata","Ledger","Invoices"],"title":"Dukaan Digital","sub":"Your shop’s digital munim · Powered by Gemma 4","new":"Create a bill","draft":"Review your bill","confirm":"Confirm and issue invoice","upload":"Upload a bill, invoice, receipt, or ledger","review":"Review extracted information before saving","no_data":"No saved business data yet.","search":"Search invoices","lang":"Language","tax":"GST rate (%)","tax_type":"Tax treatment","customer":"Customer (optional)","record":"Save reviewed records","error":"Needs your review","recent":"Recent invoices","revenue":"Recorded invoice value","docs":"Documents processed","lines":"Review extracted rows","ledger":"Ledger entries","analyze":"Analyze document","english":"English","hindi":"हिन्दी"},"हिन्दी":{"nav":["डैशबोर्ड","आवाज़ से बिल","उधार और रिमाइंडर","स्मार्ट इन्वेंटरी","मासिक रिपोर्ट","बही-खाता स्कैन","बही-खाता","बिल इतिहास"],"title":"दुकान डिजिटल","sub":"आपकी दुकान का डिजिटल मुनीम · Gemma 4 द्वारा संचालित","new":"नया बिल बनाएं","draft":"बिल जांचें","confirm":"पुष्टि करें और बिल जारी करें","upload":"बिल, रसीद या बही-खाता अपलोड करें","review":"सहेजने से पहले निकली जानकारी जांचें","no_data":"अभी कोई व्यवसाय रिकॉर्ड सहेजा नहीं है।","search":"बिल खोजें","lang":"भाषा","tax":"GST दर (%)","tax_type":"कर का प्रकार","customer":"ग्राहक (वैकल्पिक)","record":"जांचे हुए रिकॉर्ड सहेजें","error":"जांच आवश्यक","recent":"हाल के बिल","revenue":"दर्ज बिल राशि","docs":"प्रसंस्कृत दस्तावेज़","lines":"निकली पंक्तियां जांचें","ledger":"बही-खाता प्रविष्टियां","analyze":"दस्तावेज़ विश्लेषण","english":"English","hindi":"हिन्दी"}}
 TODAY=datetime.now(ZoneInfo("Asia/Kolkata")).date()
 st.sidebar.markdown('<div class="sb-brand"><div class="sb-mark">मु</div><div><b>MunshiPro</b><span>Dukaan Digital · दुकान डिजिटल</span></div></div>',unsafe_allow_html=True)
 if "lang" not in st.session_state: st.session_state.lang="English"
 st.session_state.lang=st.sidebar.selectbox("Language / भाषा",["English","हिन्दी"],index=0 if st.session_state.lang=="English" else 1)
-t=L[st.session_state.lang]; st.markdown(f'<div class="topbar"><div><b>{t["title"]}</b><small>{t["sub"]}</small></div><span class="pill"><i></i>Gemma 4</span></div>',unsafe_allow_html=True)
+t=L[st.session_state.lang]
 db=Store(Path(os.getenv("DUKAAN_DB_PATH", str(Path(__file__).parent/"dukaan.sqlite3"))))
 if all(os.getenv(k) for k in ("WHATSAPP_ACCESS_TOKEN","WHATSAPP_PHONE_NUMBER_ID","META_GRAPH_VERSION","WHATSAPP_TEMPLATE_NAME")):
     @st.cache_resource
@@ -147,28 +164,39 @@ if requested_page in t["nav"]: st.session_state.page_nav=menu_labels[t["nav"].in
 if st.session_state.get("page_nav") not in menu_labels: st.session_state.page_nav=menu_labels[0]
 page=st.sidebar.radio("MENU / मेनू",menu_labels,key="page_nav",label_visibility="visible")
 page=t["nav"][[f"{icon}  {label}" for icon,label in zip(icons,t["nav"])].index(page)]
+st.markdown(f'<div class="topbar"><div><b>{_html.escape(page)}</b><small>MunshiPro · Digital bahi-khata for your shop</small></div><span class="pill"><i></i>Gemma 4</span></div>',unsafe_allow_html=True)
 invoices=db.invoices()
 
 if page==t["nav"][0]:
-    st.markdown(hero_html(("Good day. Here’s your shop at a glance." if st.session_state.lang=="English" else "नमस्ते, आज आपकी दुकान का हाल।"),_day_label(TODAY,st.session_state.lang),[(t["recent"],str(len(invoices)),False),(t["revenue"],f"₹{sum(float(x['total']) for x in invoices):,.2f}",True),(t["docs"],str(len(db.documents())),False)]),unsafe_allow_html=True)
-    st.subheader(t["recent"]); search=st.text_input(t["search"])
-    rows=[i for i in invoices if search.casefold() in (i["number"]+i["customer"]).casefold()]
+    st.markdown(f'<div class="dash-head"><div><h1>Your shop, at a glance</h1><p>{_day_label(TODAY,st.session_state.lang)} · Keep your daily records moving.</p></div></div>',unsafe_allow_html=True)
+    a,b=st.columns(2,gap="large")
+    with a.container(border=True):
+        st.markdown('<div class="action-card action-scan"><div class="action-icon">▧</div><div class="eyebrow">Gemma 4 · Image to records</div><h3>Scan Bahi-Khata</h3><p>Turn a photo of handwritten Hindi or English ledger entries into reviewable digital records.</p></div>',unsafe_allow_html=True)
+        if st.button("Scan a ledger page →",key="quick_upload",use_container_width=True): st.session_state.quick_nav=t["nav"][5]; st.rerun()
+    with b.container(border=True):
+        st.markdown('<div class="action-card action-voice"><div class="action-icon">🎙</div><div class="eyebrow">Gemma 4 · Hindi, English & Hinglish</div><h3>Voice Entry</h3><p>Speak a sale or credit entry, review the parsed details, and save it to your digital khata.</p></div>',unsafe_allow_html=True)
+        if st.button("Record a sale or udhaar →",key="quick_bill",type="primary",use_container_width=True): st.session_state.quick_nav=t["nav"][1]; st.rerun()
+    total_sales=sum(float(x.get("total",0) or 0) for x in invoices)
+    customer_count=len({str(x.get("customer","")).strip().casefold() for x in invoices if str(x.get("customer","")).strip()})
+    m1,m2,m3,m4=st.columns(4)
+    m1.metric("Recorded sales",f"₹{total_sales:,.0f}")
+    m2.metric("Invoices",len(invoices))
+    m3.metric("Customers",customer_count)
+    m4.metric("Documents reviewed",len(db.documents()))
+    with st.container(border=True):
+        g1,g2,g3=st.columns([1.5,1,.85])
+        with g1:
+            st.markdown('<div class="action-card action-gst"><div class="eyebrow">Monthly close · Share with your accountant</div><h3>GST & Income Summary</h3><p>Open your recorded monthly report and download its PDF summary.</p></div>',unsafe_allow_html=True)
+        with g2:
+            st.metric("Recorded GST",f"₹{sum(float(x.get('tax',0) or 0) for x in invoices):,.2f}")
+            st.caption("Calculated from saved invoices")
+        with g3:
+            if st.button("Open GST reports →",key="quick_gst",type="primary",use_container_width=True): st.session_state.quick_nav=t["nav"][4]; st.rerun()
+    st.markdown('<div class="section-head"><h2>Recent invoices</h2><span>From your saved records</span></div>',unsafe_allow_html=True)
+    search=st.text_input(t["search"],label_visibility="collapsed",placeholder=t["search"])
+    rows=[i for i in invoices if search.casefold() in (str(i.get("number",""))+str(i.get("customer",""))).casefold()]
     if rows: st.dataframe(pd.DataFrame(rows)[["number","created","customer","status","total"]],use_container_width=True,hide_index=True)
-    else:
-        st.info(t["no_data"])
-        a,b,c=st.columns(3)
-        with a.container(border=True):
-            st.markdown("#### 🎙️ Voice billing")
-            st.caption("Create a reviewed invoice by speaking or typing an order.")
-            if st.button("Create your first bill →",key="quick_bill"): st.session_state.quick_nav=t["nav"][1]
-        with b.container(border=True):
-            st.markdown("#### ▧ Upload records")
-            st.caption("Bring in sales sheets, receipts, or ledger pages.")
-            if st.button("Analyze a document →",key="quick_upload"): st.session_state.quick_nav=t["nav"][5]
-        with c.container(border=True):
-            st.markdown("#### ≡ Digital ledger")
-            st.caption("Review extracted entries and export verified records.")
-            if st.button("Open ledger →",key="quick_ledger"): st.session_state.quick_nav=t["nav"][6]
+    else: st.info(t["no_data"] if not invoices else "No invoices match this search.")
     if invoices:
         dates=pd.DataFrame(invoices); dates["created"]=pd.to_datetime(dates.created); dates["total"]=pd.to_numeric(dates.total); st.write("Revenue by date / तारीख के अनुसार बिक्री");st.bar_chart(dates.groupby(dates.created.dt.date).total.sum())
 
