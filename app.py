@@ -13,7 +13,7 @@ from dukaan.gemma import parse_voice_order, read_ledger_image
 from dukaan.reports import make_monthly_pdf, send_summary_pdf
 from dukaan.reminders import run_scheduler
 
-st.set_page_config(page_title="MunshiPro",page_icon="📒",layout="wide")
+st.set_page_config(page_title="Dukaan Digital",page_icon="📒",layout="wide")
 st.markdown("""<style>
 @import url('https://fonts.googleapis.com/css2?family=Hind:wght@400;500;600;700&family=Rozha+One&display=swap');
 :root{color-scheme:light;--bottle:#0d3b31;--bottle2:#14514a;--paper:#eef3ec;--rule:#dbe5d8;--card:#fbfdf9;--line:#d3ddd0;--ink:#13221d;--muted:#5a6a63;--haldi:#f1b323;--haldi-d:#c58a00;--late:#c2412d;--soon:#2e7d5b;--today:#d99a06}
@@ -277,39 +277,70 @@ elif page==t["nav"][4]:
     if not os.getenv("WHATSAPP_SUMMARY_TEMPLATE_NAME"): st.caption("Direct PDF delivery requires an approved WhatsApp template with a document header and four body parameters: period, sales, open credit, recorded GST.")
 
 elif page==t["nav"][5]:
+    IMG_EXT=(".png",".jpg",".jpeg",".webp",".tif",".tiff")
+    def _has_gemini():
+        if os.getenv("GEMINI_API_KEY"): return True
+        try: return bool(st.secrets.get("GEMINI_API_KEY"))
+        except Exception: return False
+    def _num(v):
+        try: return float(str(v).replace(",","").replace("₹","").strip() or 0)
+        except Exception: return 0.0
+    def _gemma_frame(rows):
+        cols=["date","customer","description","debit","credit","confidence","reviewed"]
+        return pd.DataFrame([{"date":str(r.get("date") or ""),"customer":str(r.get("customer") or ""),"description":str(r.get("description") or ""),"debit":_num(r.get("debit")),"credit":_num(r.get("credit")),"confidence":str(r.get("confidence") or "low").lower(),"reviewed":False} for r in rows if isinstance(r,dict)],columns=cols)
+    def _read_with_gemma(docid,data,filename):
+        with st.spinner("Reading the page with Gemma 4..."):
+            st.session_state.gemma_ledger=(docid,read_ledger_image(data,mimetypes.guess_type(filename)[0] or "image/jpeg"))
+    has_ai=_has_gemini()
     st.subheader(t["upload"]); uploaded=st.file_uploader(t["upload"],type=["csv","xlsx","xls","pdf","png","jpg","jpeg","webp","tif","tiff"])
     if uploaded and st.button(t["analyze"],type="primary"):
         try:
-            raw=uploaded.getvalue(); docid=db.add_document(file_hash(raw),uploaded.name,raw,"upload")
+            raw=uploaded.getvalue(); is_img=Path(uploaded.name).suffix.lower() in IMG_EXT
+            docid=db.add_document(file_hash(raw),uploaded.name,raw,"upload")
+            if docid is None:
+                row=db.db.execute("SELECT id FROM documents WHERE filename=? ORDER BY id DESC",(uploaded.name,)).fetchone()
+                docid=row["id"] if row else None
+                if docid is not None: st.info("This document was uploaded before, so it was reopened instead of being saved twice.")
             if docid is None: st.warning("This exact document was already uploaded; duplicate prevented.")
+            elif is_img and has_ai:
+                st.session_state.extracted=(docid,"text","",uploaded.name); st.session_state.pop("gemma_ledger",None)
+                _read_with_gemma(docid,raw,uploaded.name)
             else:
-                content,kind=extract(uploaded); st.session_state.extracted=(docid,kind,content,uploaded.name)
-        except Exception as e: st.error(str(e))
+                with st.spinner("Extracting text..."): content,kind=extract(uploaded)
+                st.session_state.extracted=(docid,kind,content,uploaded.name)
+        except Exception as e: st.error(f"Could not process this file: {e}")
     if st.session_state.get("extracted"):
         docid,kind,content,name=st.session_state.extracted;st.write("#### "+t["review"]);st.caption("Source retained: "+name)
+        is_img=Path(name).suffix.lower() in IMG_EXT
         if kind=="text":
-            st.text_area("Extracted original text",content,height=200,key="ocr_text")
-            is_ledger=st.checkbox("This is a handwritten ledger / यह हस्तलिखित बही है")
-            parsed=parse_ledger_text(st.session_state.ocr_text) if is_ledger else []
-            if parsed:
-                ed=st.data_editor(pd.DataFrame(parsed),num_rows="dynamic",use_container_width=True,hide_index=True)
-                if st.button(t["record"]): db.add_entries(docid,ed.to_dict("records")); st.success("Reviewed entries saved")
-            else: st.info("Text is preserved for verification. Confirm the document type and correct extracted rows before saving structured data.")
-            source=db.db.execute("SELECT filename,content FROM documents WHERE id=?",(docid,)).fetchone()
-            if source and Path(source["filename"]).suffix.lower() in (".png",".jpg",".jpeg",".webp",".tif",".tiff"):
-                if os.getenv("GEMINI_API_KEY") and st.button("✨ Read handwritten page with Gemma 4 vision",key=f"gemma_ledger_{docid}"):
-                    try: st.session_state.gemma_ledger=(docid,read_ledger_image(source["content"],mimetypes.guess_type(source["filename"])[0] or "image/jpeg"))
-                    except Exception as e: st.error(f"Gemma could not read this image: {e}")
-                elif not os.getenv("GEMINI_API_KEY"): st.caption("Add GEMINI_API_KEY to enable Gemma 4 multimodal handwriting recognition.")
-                if st.session_state.get("gemma_ledger",(None,))[0]==docid:
+            if content.strip():
+                st.text_area("Extracted original text",content,height=200,key=f"ocr_text_{docid}")
+                is_ledger=st.checkbox("This is a handwritten ledger / यह हस्तलिखित बही है",key=f"is_ledger_{docid}")
+                parsed=parse_ledger_text(st.session_state[f"ocr_text_{docid}"]) if is_ledger else []
+                if parsed:
+                    ed=st.data_editor(pd.DataFrame(parsed),num_rows="dynamic",use_container_width=True,hide_index=True,key=f"ocr_rows_{docid}")
+                    if st.button(t["record"],key=f"ocr_save_{docid}"): db.add_entries(docid,ed.to_dict("records")); st.success("Reviewed entries saved")
+                else: st.info("Text is preserved for verification. Tick the ledger box to turn it into rows, then correct them before saving.")
+            if is_img:
+                have=st.session_state.get("gemma_ledger",(None,))[0]==docid
+                if has_ai:
+                    if st.button("↻ Read again with Gemma 4" if have else "✨ Read handwritten page with Gemma 4 vision",key=f"gemma_ledger_{docid}"):
+                        try:
+                            src_row=db.db.execute("SELECT content FROM documents WHERE id=?",(docid,)).fetchone()
+                            _read_with_gemma(docid,src_row["content"],name); have=True
+                        except Exception as e: st.error(f"Gemma could not read this image: {e}")
+                else: st.caption("Add GEMINI_API_KEY to enable Gemma 4 multimodal handwriting recognition.")
+                if have:
                     st.markdown("#### Gemma 4 transcription · review every value")
-                    gemma_edit=st.data_editor(pd.DataFrame(st.session_state.gemma_ledger[1]),num_rows="dynamic",use_container_width=True,hide_index=True,key=f"gemma_rows_{docid}")
+                    frame=_gemma_frame(st.session_state.gemma_ledger[1])
+                    if frame.empty: st.warning("Gemma found no readable rows. Try a clearer, straighter, well-lit photo.")
+                    gemma_edit=st.data_editor(frame,num_rows="dynamic",use_container_width=True,hide_index=True,key=f"gemma_rows_{docid}")
                     if st.button("Save reviewed Gemma rows",key=f"gemma_save_{docid}"): db.add_entries(docid,gemma_edit.to_dict("records")); st.success("Reviewed Gemma rows saved.")
         else:
             try:
                 frame=normalize(content); st.dataframe(frame,use_container_width=True,hide_index=True)
-                edited=st.data_editor(frame,num_rows="dynamic",use_container_width=True,hide_index=True)
-                if st.button(t["record"]):
+                edited=st.data_editor(frame,num_rows="dynamic",use_container_width=True,hide_index=True,key=f"table_rows_{docid}")
+                if st.button(t["record"],key=f"table_save_{docid}"):
                     db.add_entries(docid,edited.to_dict("records")); st.success("Reviewed rows saved")
                 st.subheader("Actual data summary")
                 amount=edited.line_total.sum(); a,b=st.columns(2);a.metric("Document total",f"₹{amount:,.2f}");b.metric("Products",int(edited.product.nunique()))
