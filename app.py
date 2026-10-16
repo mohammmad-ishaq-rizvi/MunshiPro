@@ -333,7 +333,12 @@ elif page==t["nav"][5]:
                 if have:
                     st.markdown("#### Gemma 4 transcription · review every value")
                     frame=_gemma_frame(st.session_state.gemma_ledger[1])
-                    if frame.empty: st.warning("Gemma found no readable rows. Try a clearer, straighter, well-lit photo.")
+                    if frame.empty:
+                        st.warning("Gemma could not read this page automatically. Your photo is shown below: type the rows you can see into the table, or press Read again with a straighter, well-lit photo.")
+                        frame=pd.DataFrame([{"date":"","customer":"","description":"","debit":0.0,"credit":0.0,"confidence":"low","reviewed":False} for _ in range(5)])
+                    with st.expander("📷 View uploaded photo (compare while reviewing)",expanded=True):
+                        _img=db.db.execute("SELECT content FROM documents WHERE id=?",(docid,)).fetchone()
+                        if _img: st.image(bytes(_img["content"]),use_container_width=True)
                     gemma_edit=st.data_editor(frame,num_rows="dynamic",use_container_width=True,hide_index=True,key=f"gemma_rows_{docid}")
                     if st.button("Save reviewed Gemma rows",key=f"gemma_save_{docid}"): db.add_entries(docid,gemma_edit.to_dict("records")); st.success("Reviewed Gemma rows saved.")
         else:
